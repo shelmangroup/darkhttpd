@@ -1,0 +1,35 @@
+version: 2
+jobs:
+  build:
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Build Docker image
+          command: |
+            docker build -t darkhttpd \
+              --label build_number=${CIRCLE_BUILD_NUM} \
+              --label build_url=${CIRCLE_BUILD_URL} \
+              --label git_branch=${CIRCLE_BRANCH} \
+              --label git_commit=${CIRCLE_SHA1} \
+              --label git_repository=${CIRCLE_REPOSITORY_URL} \
+              --label git_tag=${CIRCLE_TAG} \
+              .
+      - deploy:
+          name: Push application Docker image
+          command: |
+            if [ "${CIRCLE_TAG}" != "" ]; then
+              docker login -u ${DOCKER_USER} -p ${DOCKER_PASSWORD}
+              docker tag darkhttpd "shelmangroup/darkhttpd:${CIRCLE_TAG}"
+              docker tag darkhttpd "shelmangroup/darkhttpd:latest"
+              docker push "shelmangroup/darkhttpd:${CIRCLE_TAG}"
+              docker push "shelmangroup/darkhttpd:latest"
+            else
+              echo "Not building tag. Not pushing image to registry."
+            fi
+
+deployment:
+  fake_deploy_for_cci2:
+    tag: /.*/
+    commands:
+      - echo "make tags run in 2.0"
