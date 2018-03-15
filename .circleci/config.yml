@@ -18,15 +18,11 @@ jobs:
       - deploy:
           name: Push application Docker image
           command: |
-            if [ "${CIRCLE_TAG}" != "" ]; then
-              docker login -u ${DOCKER_USER} -p ${DOCKER_PASSWORD}
-              docker tag darkhttpd "shelmangroup/darkhttpd:${CIRCLE_TAG}"
-              docker tag darkhttpd "shelmangroup/darkhttpd:latest"
-              docker push "shelmangroup/darkhttpd:${CIRCLE_TAG}"
-              docker push "shelmangroup/darkhttpd:latest"
-            else
-              echo "Not building tag. Not pushing image to registry."
-            fi
+            docker login -u ${DOCKER_USER} -p ${DOCKER_PASSWORD}
+            docker tag darkhttpd "shelmangroup/darkhttpd:${CIRCLE_SHA1:0:8}"
+            docker tag darkhttpd "shelmangroup/darkhttpd:latest"
+            docker push "shelmangroup/darkhttpd:${CIRCLE_SHA1:0:8}"
+            docker push "shelmangroup/darkhttpd:latest"
 
 deployment:
   fake_deploy_for_cci2:
